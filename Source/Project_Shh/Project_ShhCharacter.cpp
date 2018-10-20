@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Runtime/Engine/Public/DrawDebugHelpers.h"	//DebugHelpers
 
 //////////////////////////////////////////////////////////////////////////
 // AProject_ShhCharacter
@@ -76,6 +77,16 @@ void AProject_ShhCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AProject_ShhCharacter::OnResetVR);
 }
 
+TSubclassOf<ADecalActor> AProject_ShhCharacter::GetFootprintDecal(UPhysicalMaterial* PhysMaterial)
+{
+	EPhysicalSurface SurfaceType = UPhysicalMaterial::DetermineSurfaceType(PhysMaterial);
+
+	TSubclassOf<ADecalActor> Result = nullptr;
+
+	Result = DefaultFootprint;
+
+	return Result;
+}
 
 void AProject_ShhCharacter::OnResetVR()
 {
@@ -132,3 +143,32 @@ void AProject_ShhCharacter::MoveRight(float Value)
 		AddMovementInput(Direction, Value);
 	}
 }
+
+// FootPrint
+void AProject_ShhCharacter::Trace(FHitResult& Outhit, const FVector& Location) const
+{
+	FVector Start = Location;
+	FVector End = Location;
+
+	Start.Z += 10.0f;
+	End.Z -= 10.0f;
+
+	Outhit = FHitResult(ForceInit);
+
+	FCollisionQueryParams TraceParams(FName(TEXT("Footprint trace")), true, this);
+	TraceParams.bReturnPhysicalMaterial = true;
+
+	GetWorld()->LineTraceSingleByChannel(Outhit, Start, End, ECC_Visibility, TraceParams);
+}
+
+void AProject_ShhCharacter::FootPrint(const UArrowComponent * FootArrow) const
+{
+	FHitResult HitResult;
+	FVector FootWorldPosition = FootArrow->GetComponentTransform().GetLocation();
+
+	Trace(HitResult, FootWorldPosition);
+
+	// Debug vis
+	DrawDebugLine(GetWorld(), HitResult.Location, HitResult.Location + HitResult.Normal * 10.0f, FColor::Green, false, 2.0f, 0, 5.0f);
+}
+

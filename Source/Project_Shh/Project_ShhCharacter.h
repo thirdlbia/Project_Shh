@@ -4,6 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Runtime/Engine/Classes/Components/ArrowComponent.h"	// UArrowComponent
+#include "Runtime/Engine/Classes/Engine/Engine.h"
+#include "Runtime/Engine/Classes/Engine/DecalActor.h"		// Decal »ç¿ë
+#include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Project_ShhCharacter.generated.h"
 
 UCLASS(config=Game)
@@ -58,9 +62,16 @@ protected:
 	/** Handler for when a touch input stops. */
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 
+	void Trace(FHitResult& Outhit, const FVector& Location) const;
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UPROPERTY(EditDefaultsOnly, Category = Effect)
+	TSubclassOf<class ADecalActor> DefaultFootprint;
+
+	TSubclassOf<ADecalActor> GetFootprintDecal(UPhysicalMaterial * PhysMaterial);
 	// End of APawn interface
 
 public:
@@ -68,5 +79,8 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	UFUNCTION(BlueprintCallable, Category = "Character")
+	void FootPrint(const UArrowComponent* FootArrow) const;
 };
 
